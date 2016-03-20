@@ -25,7 +25,8 @@
         <meta name="format-detection" content="telephone=no" />
         <meta name="msapplication-tap-highlight" content="no" />
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=10, minimum-scale=0, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, width=device-width,height=device-height,target-densitydpi=device-dpi" />
+     
         <link rel="stylesheet" type="text/css" href="css/index.css" />
 		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
 		<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
@@ -36,6 +37,18 @@
 	
 	<script>
 	var ApiUrl = "https://api.eet.nu/";
+
+	$.ajaxSetup({
+    beforeSend: function() {
+        // TODO: show your spinner
+
+        $('#Spinner').show();
+    },
+    complete: function() {
+        // TODO: hide your spinner
+        $('#Spinner').hide();
+    }
+});
 	function update(){
 		document.getElementById("namehead").innerHTML = localStorage.getItem("name")
 	}
@@ -60,9 +73,12 @@ function clearContent(){
 
 
 }
+
 function buildPages(data){
 	for (var i = data.results.length - 1; i >= 0; i--) {
-	 	$("body").append( '<div data-role="page" id="venues' + data.results[i].id + '"> '
+		var id = "#venues" + data.results[i].id;
+		if(!($(id).length)){
+	 	$("body").append( '<div data-role="page" class="swiperight" id="venues' + data.results[i].id + '"> '
 				+ '<div data-role="header">'
 				+ '<a href="#main" data-icon="back" data-transition="pop" >back</a>'
 				+ '	<h1>'+data.results[i].name+'</h1>'
@@ -77,18 +93,21 @@ function buildPages(data){
 				+ 'telephone : '+data.results[i].telephone
 				+ '	</li></ul></div></div>');
  	}
+ }
+
 }
 function buildContent(data){
 	var builder = '<ul data-role="listview" data-theme="a">';
 
 	 for (var i = data.results.length - 1; i >= 0; i--) {
-	 	builder = builder + '<li class="list-group-item" ><a  data-transition="pop" href="#venues' + data.results[i].id + '"><span class="tab">' + data.results[i].name + '</span></a></li>';
+	 	builder = builder + '<li class="list-group-item" ><a  class="swipeleft" data-transition="pop" href="#venues' + data.results[i].id + '"><span class="tab">' + data.results[i].name + '</span></a></li>';
  	};
 	builder = builder + '</ul>';
 
 	return builder;
 }
 function query(){
+		
 	var searchText = $("#searchbar").val();
 	var searchOn = $("#searchon").val();
 	var querystring = ApiUrl + "venues";
@@ -99,32 +118,54 @@ function query(){
  	querystring = querystring + "?sort_by="+searchOn;
 
 	$.get(querystring, function( data ) {
-	clearContent();
- 	$("#list").append(buildContent(data));
- 	$('#list').trigger("create");
+		clearContent();
+		buildPages(data);
+	 	$("#list").append(buildContent(data));
+		setSwipe();
+	 	 
+	 	$('#list').trigger("create"); 
 	});
+		
 }
 
-	
+
+	function setSwipe(){
+	 	$(".swipeleft").on("swipeleft",function(){  		
+			$(this).click();
+		});
+ 	 	$(".swiperight").on("swiperight",function(){  
+  			window.location.href = "#main";
+  		});
+  		$("#list").on("swiperight",function(){  
+		
+		$("#panelbutton").click();
+  		
+  		});
+	}
 
 
+ 
 
 $.get( ApiUrl + "venues", function( data ) {
  	buildPages(data);
  	$("#list").append(buildContent(data));
+ 	setSwipe();
  	$('#list').trigger("create");
 
 });
+
+	
 
 	</script>
 	
 	<div data-role="page" id="main"> 
 		<div data-role="header">
-			 <a href="#SearchPanel" class="ui-btn ui-btn-inline ui-corner-all ui-shadow">Search</a>
+			 <a href="#SearchPanel" id="panelbutton" class="ui-btn ui-btn-inline ui-corner-all ui-shadow">Search</a>
 		<a href="#instel" data-icon="gear" class="ui-btn-right" data-transition="pop" >instel</a>
-		<h1 id="namehead"></h1>
-		
+		<h1 id="namehead"></h1>		
 		</div> 
+		<div id='Spinner' class="loader"></div>	
+		
 		 <div data-role="panel" id="SearchPanel"> 
 		    <h2>Search</h2>
 		    	<input type="text" id="searchbar"></input>
@@ -143,103 +184,5 @@ $.get( ApiUrl + "venues", function( data ) {
 			</div>
 		</div> 
 	</div>
-	<div data-role="page" id="info1"> 
-		<div data-role="header">
-		<a href="#main" data-icon="home" data-transition="pop" >Home</a>
-			<h1>rinus</h1>
-	
-		</div> 
-	
-		<div data-role="content">
-			<ul data-role="listview" data-theme="a">
-				<li><a href="#info11">liedje1</a></li>
-				<li><a href="#info11">liedje1</a></li>
-				<li><a href="#info11">liedje1</a></li>
-			</ul>
-			
-		</div> 
-	</div>
-	<div data-role="page" id="info11"> 
-		<div data-role="header">
-		<a href="#info1" data-icon="back" data-transition="pop" >back</a>
-			<h1>lalalala-lalaLA</h1>
-	
-		</div> 
-	
-		<div data-role="content">
-			<ul>
-			<li>
-			Name : lalalala-lalaLA
-			</li>
-			<li>
-			Creator : names
-			</li>
-			<li>
-			Creation date : 10-12-2013
-			</li>
-			</ul>
-			
-		</div> 
-	</div>
-	
-		<div data-role="page" id="info2"> 
-		<div data-role="header">
-		<a href="#main" data-icon="home" data-transition="pop" >Home</a>
-			<h1>rinus</h1>
-	
-		</div> 
-	
-		<div data-role="content">
-			<ul data-role="listview" data-theme="a">
-				<li><a href="#info21">liedje1</a></li>
-				<li><a href="#info21">liedje1</a></li>
-				<li><a href="#info21">liedje1</a></li>
-			</ul>
-			
-		</div> 
-	</div>
-	<div data-role="page" id="info21"> 
-		<div data-role="header">
-		<a href="#info2" data-icon="back" data-transition="pop" >back</a>
-			<h1>liedje1</h1>
-	
-		</div> 
-	
-		<div data-role="content">
-			<ul>
-			<li>
-			Name : liedje1
-			</li>
-			<li>
-			Creator : rinus
-			</li>
-			<li>
-			Creation date : 11-12-2013
-			</li>
-			</ul>
-			
-		</div> 
-	</div>
-	
-	<div data-role="page" id="instel"> 
-		<div data-role="header">
-		<a href="#main" data-icon="home" data-transition="pop" >Home</a>
-			<h1>opties</h1>
-	
-		</div> 
-	
-		<div data-role="content">
-			<ul data-role="listview" data-theme="a">
-				<li>naam van hoofdscherm</li>
-				<li> <input type="text" name="name" id="setter" value=""/></li>
-				<li><button onclick="setname()"> set </button></li>
-			</ul>
-			
-		</div> 
-	</div>
-
-	
-	
-	
     </body>
 </html>
